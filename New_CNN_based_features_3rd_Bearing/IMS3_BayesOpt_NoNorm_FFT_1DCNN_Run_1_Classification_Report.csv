@@ -1,0 +1,3 @@
+Class,Precision,Recall,F1_Score
+Healthy,0.999780461,1,0.999890218
+OuterRaceFault,1,0.999341238,0.999670511

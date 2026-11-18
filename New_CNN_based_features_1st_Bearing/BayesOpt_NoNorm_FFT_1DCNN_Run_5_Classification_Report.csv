@@ -1,0 +1,4 @@
+Class,Precision,Recall,F1-Score
+Healthy,0.9990,0.9974,0.9982
+InnerRaceFault,0.9969,1.0000,0.9984
+RollerElementFault,0.9979,0.9979,0.9979

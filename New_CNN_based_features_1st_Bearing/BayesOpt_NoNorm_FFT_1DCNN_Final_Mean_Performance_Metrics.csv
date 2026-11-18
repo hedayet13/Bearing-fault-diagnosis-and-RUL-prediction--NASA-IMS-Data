@@ -1,0 +1,4 @@
+Class,MeanPrecision,MeanRecall,MeanF1
+Healthy,0.999166502,0.998333333,0.998749457
+InnerRaceFault,0.996265982,1,0.998129005
+RollerElementFault,0.999583333,0.9975,0.998539382
