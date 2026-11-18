@@ -1,174 +1,79 @@
-\# Bearing Fault Diagnosis and RUL Prediction Using NASA IMS Data
+# Bearing Fault Diagnosis and RUL Prediction Using NASA IMS Data
 
+MATLAB scripts and experimental results for bearing fault diagnosis, degradation assessment, and remaining useful life (RUL) prediction using the IMS bearing run-to-failure datasets distributed by NASA.
 
+**Companion study**  
+*Frequency-domain-based Bayesian-optimized 1-D CNN feature learning for integrated bearing fault diagnosis and remaining useful life prediction*
 
-MATLAB implementation and experimental outputs for the study:
+## Workflow
 
+```mermaid
+flowchart LR
+    A[Vibration recordings] --> B[FFT amplitude spectra]
+    B --> C[Bayesian-optimized 1-D CNN]
+    C --> D[Gaussian-kernel SVM]
+    D --> E[Fault classification]
+    C --> F[Bearing-level health indicator]
+    F --> G[GPR degradation forecast]
+    G --> H[RUL estimate]
+```
 
+The 1-D CNN learns features from FFT amplitude spectra by distinguishing early-stage and late-stage recordings. Bayesian optimization jointly selects the initial learning rate, mini-batch size, L2 regularization coefficient, feature dimension, and convolutional filter counts.
 
-\*\*Frequency-domain-based Bayesian-optimized 1-D CNN feature learning for integrated bearing fault diagnosis and remaining useful life prediction\*\*
+The learned features support two tasks:
 
+- **Fault diagnosis.** A Gaussian-kernel support vector machine (SVM) uses the channel-level features to classify bearing conditions.
+- **RUL prediction.** Features are combined at the bearing level to construct a health indicator. Gaussian process regression (GPR) forecasts its trajectory, and RUL is estimated from the predicted threshold crossing. The CNN–LSTM benchmark uses the same downstream prognostic procedure.
 
+## Repository Contents
 
-\## Overview
+| IMS dataset | CNN feature learning and SVM diagnosis | RUL comparison |
+| :---: | --- | --- |
+| **1** | [New_CNN_based_features_1st_Bearing](./New_CNN_based_features_1st_Bearing) | [CNN_vs_CNN-LSTM_RUL_1st_data](./CNN_vs_CNN-LSTM_RUL_1st_data) |
+| **2** | [New_CNN_based_features_2nd_Bearing](./New_CNN_based_features_2nd_Bearing) | [CNN_vs_CNN-LSTM_RUL_2nd_data](./CNN_vs_CNN-LSTM_RUL_2nd_data) |
+| **3** | [New_CNN_based_features_3rd_Bearing](./New_CNN_based_features_3rd_Bearing) | [CNN_vs_CNN-LSTM_RUL_3rd_data](./CNN_vs_CNN-LSTM_RUL_3rd_data) |
 
+The folders contain MATLAB scripts, CSV performance summaries, classification reports, confusion matrices, and bearing-level RUL comparison figures.
 
+### Example RUL Comparison
 
-This project investigates bearing fault diagnosis, degradation assessment, and remaining useful life (RUL) prediction using the publicly available IMS bearing run-to-failure datasets.
+![RUL comparison between the proposed 1-D CNN and CNN–LSTM benchmark for IMS Dataset 1, Bearing 3](./CNN_vs_CNN-LSTM_RUL_1st_data/Bearing_3_RUL_Comparison_Proposed_CNN_vs_Benchmark_CNN_LSTM.jpg)
 
+*IMS Dataset 1, Bearing 3. Comparison of the proposed FFT–1-D CNN and the FFT–CNN–LSTM benchmark.*
 
+## Dataset
 
-The framework combines frequency-domain signal processing, automatic CNN feature learning, Bayesian hyperparameter optimization, support vector machine (SVM) classification, and Gaussian process regression (GPR).
+The Center for Intelligent Maintenance Systems (IMS) at the University of Cincinnati provided the vibration recordings. NASA distributes them through its Prognostics Data Repository. [Download the IMS bearing datasets](https://data.nasa.gov/dataset/ims-bearings).
 
+To run feature learning, download the raw recordings separately and prepare the input `.mat` files. Each file must contain a MATLAB cell array named `Runs`. Store recordings in chronological order, with one recording per cell. Within each recording matrix, rows are time samples and columns are sensor channels.
 
+## Getting Started
 
-\## Methodology
+**Requirements:** MATLAB with Deep Learning Toolbox and Statistics and Machine Learning Toolbox. Parallel Computing Toolbox is required for GPU or parallel execution.
 
+1. Download the IMS recordings and prepare the `Runs` input file for your dataset.
+2. Set the MATLAB current folder to the corresponding feature-learning folder. Use one dataset folder at a time because some helper functions share filenames.
+3. Check the input path in the feature-learning script, then run it to generate the CNN feature `.mat` file.
+4. Run the matching SVM script to evaluate fault classification.
+5. For RUL comparison, make the proposed CNN feature file and the benchmark CNN–LSTM feature file available to the corresponding RUL script, then run it from its dataset folder.
 
+| IMS dataset | Feature learning | Fault classification | RUL comparison |
+| :---: | --- | --- | --- |
+| **1** | `Bayes_CNN_feature_01.m` | `CNN_feature_SVM_class_01.m` | `RUL_dataset_1st.m` |
+| **2** | `Bayes_CNN_feature_02.m` | `CNN_feature_SVM_class_02.m` | `RUL_dataset_2nd.m` |
+| **3** | `Bayes_CNN_feature_03.m` | `CNN_feature_SVM_class_03.m` | `RUL_dataset_3rd.m` |
 
-1\. Transform vibration recordings into frequency-domain representations using the Fast Fourier Transform (FFT).
+> **Setup notes**
+>
+> - RUL comparisons require CNN–LSTM benchmark feature files, which must be supplied separately.
+> - The third feature-learning script loads `IMS_4th_test_Runs.mat` and saves features with an `IMS_3rd_test` filename. The third RUL script expects `IMS_4th_test` feature filenames. Verify which recordings those names refer to and align the input and output filenames before running the comparison.
 
-2\. Train a 1-D CNN using early-stage and late-stage recordings.
+## Evaluation Scope
 
-3\. Apply Bayesian optimization to select the learning rate, mini-batch size, L-2 regularization coefficient, feature dimension, and convolutional filter counts.
+The models are tuned separately for each IMS dataset. The results therefore describe performance within each dataset under the study’s evaluation protocol. Transfer to an unseen dataset would require a separate evaluation.
 
-4\. Extract learned features for Gaussian-kernel SVM fault classification.
+The CNN is tuned using early-stage versus late-stage validation accuracy. The RUL results come from a retrospective analysis of completed run-to-failure recordings.
 
-5\. Combine features at the bearing level to construct health indicators.
+## Questions
 
-6\. Apply GPR to model degradation and estimate RUL through threshold crossing.
-
-7\. Compare the proposed representation with a CNN–LSTM benchmark using a common downstream prognostic procedure.
-
-
-
-\## Repository Contents
-
-
-
-| Folder | Contents |
-
-| --- | --- |
-
-| `New\_CNN\_based\_features\_1st\_Bearing` | CNN feature learning, SVM diagnosis, and saved results for Dataset 1 |
-
-| `New\_CNN\_based\_features\_2nd\_Bearing` | CNN feature learning, SVM diagnosis, and saved results for Dataset 2 |
-
-| `New\_CNN\_based\_features\_3rd\_Bearing` | CNN feature learning, SVM diagnosis, and saved results for Dataset 3 |
-
-| `CNN\_vs\_CNN-LSTM\_RUL\_1st\_data` | RUL comparison scripts and outputs for Dataset 1 |
-
-| `CNN\_vs\_CNN-LSTM\_RUL\_2nd\_data` | RUL comparison scripts and outputs for Dataset 2 |
-
-| `CNN\_vs\_CNN-LSTM\_RUL\_3rd\_data` | RUL comparison scripts and outputs for Dataset 3 |
-
-
-
-Saved outputs include classification reports, confusion matrices, performance summaries, and bearing-wise RUL comparison figures.
-
-
-
-\## Dataset
-
-
-
-The IMS bearing datasets were provided by the Center for Intelligent Maintenance Systems at the University of Cincinnati and are distributed through NASA’s Prognostics Data Repository.
-
-
-
-Dataset access:
-
-https://data.nasa.gov/dataset/ims-bearings
-
-
-
-The original recordings and prepared input MAT files are not included in this repository.
-
-
-
-The feature-learning scripts expect a MATLAB variable named `Runs`, organized as a cell array in chronological order. Each cell contains one recording as a numerical matrix with signal samples in rows and sensor channels in columns.
-
-
-
-\## Requirements
-
-
-
-\- MATLAB
-
-\- Deep Learning Toolbox
-
-\- Statistics and Machine Learning Toolbox
-
-\- Parallel Computing Toolbox if GPU execution or parallel processing is enabled
-
-
-
-The exact MATLAB release and toolbox versions used for reproduction should be recorded with each experiment.
-
-
-
-\## Running the Analysis
-
-
-
-1\. Download the IMS recordings and prepare the corresponding `Runs` MAT files.
-
-2\. Open the folder for the desired dataset in MATLAB.
-
-3\. Check the input filenames and local paths in the scripts.
-
-4\. Run the corresponding feature-learning script:
-
-&#x20;  - Dataset 1: `Bayes\_CNN\_feature\_01.m`
-
-&#x20;  - Dataset 2: `Bayes\_CNN\_feature\_02.m`
-
-&#x20;  - Dataset 3: `Bayes\_CNN\_feature\_03.m`
-
-5\. Run the matching SVM classification script:
-
-&#x20;  - Dataset 1: `CNN\_feature\_SVM\_class\_01.m`
-
-&#x20;  - Dataset 2: `CNN\_feature\_SVM\_class\_02.m`
-
-&#x20;  - Dataset 3: `CNN\_feature\_SVM\_class\_03.m`
-
-6\. For RUL comparisons, make both the proposed CNN and benchmark CNN–LSTM feature files available, then run the corresponding `RUL\_dataset\_\*.m` script.
-
-
-
-Use each dataset folder separately so MATLAB resolves the intended versions of helper functions with identical names.
-
-
-
-\## Current Setup Notes
-
-
-
-\- The RUL comparison scripts require benchmark CNN–LSTM feature MAT files that are not currently included.
-
-\- The third-dataset feature script currently loads `IMS\_4th\_test\_Runs.mat` but saves features with an `IMS\_3rd\_test` filename.
-
-\- The third-dataset RUL script currently expects feature filenames containing `IMS\_4th\_test`. Confirm the dataset identity and make these filenames consistent before running the comparison.
-
-
-
-\## Evaluation Scope
-
-
-
-Models are optimized separately for each dataset. The reported experiments therefore do not establish transfer of a single trained model to an unseen dataset.
-
-
-
-CNN optimization uses early-stage versus late-stage classification accuracy rather than RUL prediction error. The prognostic results should be interpreted within the retrospective run-to-failure protocol described in the manuscript.
-
-
-
-\## Questions
-
-
-
-Please open a GitHub issue for questions about the implementation, dataset preparation, or experimental outputs.
-
+For questions about dataset preparation, MATLAB scripts, or experimental outputs, [open a GitHub issue](https://github.com/hedayet13/Bearing-fault-diagnosis-and-RUL-prediction--NASA-IMS-Data/issues).
